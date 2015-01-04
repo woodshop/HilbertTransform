@@ -325,9 +325,11 @@ int main(int argc, char* argv[]){
       in[j]=cos(w0*j+phase);
     }
     phase = fmod(phase + w0*H->buflen, 2*M_PI);
-    freq_shift(H, in, 10.0);
+//     freq_shift(H, in, 10.0);
+    analytic(H, in); /***** Do the analytic signal transform *****/
     for(j=0; j < H->buflen; j++){
-      fprintf(stdout, "%5.4f ", in[j]);
+//       fprintf(stdout, "%5.4f ", in[j]);
+      fprintf(stdout, "%5.4f + 1j*%5.4f", in[j], H->cpx[j]); /* output the complex values */
     }
   }
   fprintf(stdout, "\n");
@@ -335,5 +337,4 @@ int main(int argc, char* argv[]){
   free(in);
   exit(0);
 }
-
 #endif

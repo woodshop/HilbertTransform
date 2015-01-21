@@ -310,29 +310,37 @@ void freq_shift(Hilbert* H, sampleT* x, double f0){
 
 #ifdef __HILBERTTEST__
 int main(int argc, char* argv[]){
+  int nbuf;
+  float f0;
+  if (argc != 3) {
+    fprintf(stdout, "Expects 2 input arguments: nbuf and f0.\n");
+    exit(-1);
+  }
+  nbuf = atoi(argv[1]);
+  f0 = atof(argv[2]);
   sampleT* in = (sampleT*)calloc(CS_KSMPS, sizeof(sampleT));
   if(!in){
     fprintf(stderr, "Could not allocate in buffer.\n");
     exit(1);
   }
-  Hilbert* H = init_hilbert(CS_KSMPS, 44100.0); // initialize hilbert transform freq shifter
-  double w0 = 2 * M_PI * 110.0 / H->fs;
+  // initialize hilbert transform freq shifter
+  Hilbert* H = init_hilbert(CS_KSMPS, 44100.0); 
+  double w0 = 2 * M_PI * f0 / H->fs;
   double phase = 0.0;
-  // 4 buffers of samples
-  int i,j,k;
-  for (i=0; i < 4 ; i++){
+  int i,j;
+  for (i=0; i < nbuf ; i++){
     for(j=0; j < H->buflen; j++){
       in[j]=cos(w0*j+phase);
     }
     phase = fmod(phase + w0*H->buflen, 2*M_PI);
-//     freq_shift(H, in, 10.0);
     analytic(H, in); /***** Do the analytic signal transform *****/
     for(j=0; j < H->buflen; j++){
-//       fprintf(stdout, "%5.4f ", in[j]);
-      fprintf(stdout, "%5.4f + 1j*%5.4f", in[j], H->cpx[j]); /* output the complex values */
+      /* output the complex values */
+      fprintf(stdout, "%5.4f%+5.4fj ", in[j], H->cpx[j]); 
     }
   }
   fprintf(stdout, "\n");
+  // fprintf(stdout, "Converted %d buffers using f0 of %f.\n", nbuf, f0); 
   free_hilbert(H);
   free(in);
   exit(0);
